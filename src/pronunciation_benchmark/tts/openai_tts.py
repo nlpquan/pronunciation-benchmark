@@ -27,6 +27,11 @@ class OpenAITTSClient(TTSClient):
         # OpenAI's TTS voices are multilingual and auto-detect language from
         # the input text, so language_code is accepted for interface
         # consistency but unused here.
+        # mp3 rather than wav: OpenAI's wav response sets the RIFF/data chunk
+        # size fields to a placeholder (0xFFFFFFFF) instead of the true size
+        # (a streaming-response artifact), which confuses tools that trust
+        # the WAV header's declared length instead of computing from actual
+        # file size. mp3 has no such header field, so it sidesteps the issue.
         response = requests.post(
             API_URL,
             headers={"Authorization": f"Bearer {self.api_key}"},
@@ -34,14 +39,14 @@ class OpenAITTSClient(TTSClient):
                 "model": self.model,
                 "input": text,
                 "voice": voice,
-                "response_format": "wav",
+                "response_format": "mp3",
             },
             timeout=60,
         )
         response.raise_for_status()
         return TTSResult(
             audio_bytes=response.content,
-            audio_format="wav",
+            audio_format="mp3",
             provider=self.provider_name,
             voice=voice,
         )
