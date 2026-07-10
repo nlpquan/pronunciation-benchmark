@@ -8,6 +8,8 @@ pandas
 # ML / phonetics
 torch
 transformers
+allosaurus
+soundfile
 
 # API layer
 fastapi

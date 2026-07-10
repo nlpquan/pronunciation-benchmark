@@ -12,8 +12,10 @@ env/
 # Data (large / generated — keep raw/processed out of git, track via README instructions instead)
 data/raw/*
 data/processed/*
+data/results/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+!data/results/.gitkeep
 
 # Audio outputs from TTS calls
 *.wav

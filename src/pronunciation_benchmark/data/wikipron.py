@@ -42,6 +42,12 @@ LANGUAGE_PRESETS: dict[str, list[str]] = {
         "yor_latn_broad.tsv",  # Yoruba
         "swa_latn_broad.tsv",  # Swahili
     ],
+    # "medical" and "oov" both draw their raw candidate pool from the same
+    # English file - what makes an entry "medical" or "oov" isn't anything
+    # WikiPron tags, it's an external lexicon applied afterward in
+    # names.py's extract_medical_terms/extract_oov_words (see data/lexicons.py).
+    "medical": ["eng_latn_us_broad_filtered.tsv"],
+    "oov": ["eng_latn_us_broad_filtered.tsv"],
 }
 
 

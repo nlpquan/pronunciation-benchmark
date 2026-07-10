@@ -5,7 +5,9 @@ import pronunciation_benchmark.data.names as names_module
 from pronunciation_benchmark.data.names import (
     CASED_SCRIPT_CATEGORIES,
     build_benchmark_dataset,
+    extract_medical_terms,
     extract_names,
+    extract_oov_words,
 )
 
 
@@ -66,6 +68,26 @@ def test_extract_names_min_length_applies_to_uncased_categories_too():
     result = extract_names("south_asian", df)
 
     assert list(result["word"]) == ["शब्द"]
+
+
+def test_extract_medical_terms_keeps_only_lexicon_matches(monkeypatch):
+    df = _wikipron_like_df(["pneumonia", "banana", "arthritis", "Chicago"])
+    monkeypatch.setattr(names_module, "load_medical_terms", lambda: {"pneumonia", "arthritis", "chicago"})
+
+    result = extract_medical_terms(df)
+
+    # "Chicago" matches the lexicon but is dropped as capitalized (proper-noun leakage).
+    assert list(result["word"]) == ["pneumonia", "arthritis"]
+
+
+def test_extract_oov_words_drops_common_words(monkeypatch):
+    df = _wikipron_like_df(["the", "vernacularize", "of", "Portadown"])
+    monkeypatch.setattr(names_module, "load_common_words", lambda: {"the", "of"})
+
+    result = extract_oov_words(df)
+
+    # "Portadown" isn't a common word but is dropped as capitalized (proper-noun leakage).
+    assert list(result["word"]) == ["vernacularize"]
 
 
 def test_build_benchmark_dataset_samples_up_to_n_per_category(monkeypatch):

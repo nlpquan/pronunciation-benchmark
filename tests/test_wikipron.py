@@ -44,3 +44,8 @@ def test_language_presets_cover_project_categories():
     assert "vietnamese" in LANGUAGE_PRESETS
     for filenames in LANGUAGE_PRESETS.values():
         assert filenames, "each category must map to at least one WikiPron file"
+
+
+def test_medical_and_oov_categories_share_the_english_source_file():
+    assert LANGUAGE_PRESETS["medical"] == ["eng_latn_us_broad_filtered.tsv"]
+    assert LANGUAGE_PRESETS["oov"] == ["eng_latn_us_broad_filtered.tsv"]

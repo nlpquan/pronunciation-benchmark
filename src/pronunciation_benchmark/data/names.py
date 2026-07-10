@@ -23,12 +23,18 @@ categories therefore draw from WikiPron's general vocabulary rather than
 filtered proper nouns - still valid benchmark items (PROJECT.md's "common
 OOV words" category covers general non-Western vocabulary), just not
 guaranteed to be literal person names.
+
+`medical` and `oov` are a different axis entirely (English-only, testing
+rare/technical-vocabulary robustness rather than non-Western pronunciation)
+and are filtered by an external lexicon rather than capitalization - see
+extract_medical_terms/extract_oov_words and data/lexicons.py.
 """
 
 from __future__ import annotations
 
 import pandas as pd
 
+from .lexicons import load_common_words, load_medical_terms
 from .wikipron import load_category
 
 # Categories whose underlying languages (per wikipron.py's LANGUAGE_PRESETS)
@@ -56,6 +62,40 @@ def extract_names(category: str, wikipron_df: pd.DataFrame, *, min_length: int =
     return df[df["word"].str.len() >= min_length].reset_index(drop=True)
 
 
+def extract_medical_terms(wikipron_df: pd.DataFrame, *, min_length: int = 3) -> pd.DataFrame:
+    """Return the subset of WikiPron's English entries that are medical/pharma terms.
+
+    Intersects against Wiktionary's en:Medicine/en:Pharmacology category
+    members (data/lexicons.py). Also drops capitalized entries - WikiPron's
+    English file includes proper nouns (place names, surnames) that
+    incidentally share a category with real medical terms.
+    """
+    medical_terms = load_medical_terms()
+    df = wikipron_df[wikipron_df["word"].str.lower().isin(medical_terms)]
+    df = df[~df["word"].str[0].str.isupper()]
+    return df[df["word"].str.len() >= min_length].reset_index(drop=True)
+
+
+def extract_oov_words(wikipron_df: pd.DataFrame, *, min_length: int = 3) -> pd.DataFrame:
+    """Return the subset of WikiPron's English entries absent from a
+    top-10k common-word list (data/lexicons.py) - a proxy for words a TTS
+    system's training data is less likely to have seen often.
+
+    Also drops capitalized entries for the same proper-noun-leakage reason
+    as extract_medical_terms.
+    """
+    common_words = load_common_words()
+    df = wikipron_df[~wikipron_df["word"].str.lower().isin(common_words)]
+    df = df[~df["word"].str[0].str.isupper()]
+    return df[df["word"].str.len() >= min_length].reset_index(drop=True)
+
+
+EXTERNAL_LEXICON_CATEGORIES = {
+    "medical": extract_medical_terms,
+    "oov": extract_oov_words,
+}
+
+
 def build_benchmark_dataset(
     categories: list[str] | None = None,
     *,
@@ -67,12 +107,15 @@ def build_benchmark_dataset(
     each with WikiPron IPA ground truth already attached.
     """
     if categories is None:
-        categories = ["vietnamese", "south_asian", "middle_eastern", "african"]
+        categories = ["vietnamese", "south_asian", "middle_eastern", "african", "medical", "oov"]
 
     frames = []
     for category in categories:
         wikipron_df = load_category(category)
-        names_df = extract_names(category, wikipron_df)
+        if category in EXTERNAL_LEXICON_CATEGORIES:
+            names_df = EXTERNAL_LEXICON_CATEGORIES[category](wikipron_df)
+        else:
+            names_df = extract_names(category, wikipron_df)
         sample_size = min(n_per_category, len(names_df))
         frames.append(names_df.sample(n=sample_size, random_state=seed).reset_index(drop=True))
 
