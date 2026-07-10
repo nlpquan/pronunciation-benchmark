@@ -7,6 +7,15 @@ dead end. Names are sourced from person Items instead: for humans (Q5) with
 a given citizenship, pull the "name in native language" claim (P1559),
 filtered to the expected language tag. This gives real names in native
 script, which is what the benchmark needs to feed into TTS providers.
+
+Not currently used by the Phase 1 dataset pipeline (see names.py):
+cross-referencing these names against WikiPron IPA entries by exact string
+match only had a usable hit rate for Vietnamese (~72%); South Asian/Middle
+Eastern/African names are proper nouns mostly absent from a general
+dictionary (13%, 17%, <1% respectively), so the benchmark instead sources
+items directly from WikiPron. Kept here as a working, tested module in
+case a future session wants real biographical names for curation or
+enrichment rather than WikiPron's proper-noun heuristic.
 """
 
 from __future__ import annotations
