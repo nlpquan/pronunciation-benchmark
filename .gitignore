@@ -1,0 +1,38 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Env / secrets
+.env
+*.key
+
+# Data (large / generated — keep raw/processed out of git, track via README instructions instead)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Audio outputs from TTS calls
+*.wav
+*.mp3
+audio_cache/
+
+# Models
+*.pt
+*.pth
+*.bin
+checkpoints/
+
+# Notebooks checkpoints
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Docker
+*.log

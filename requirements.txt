@@ -1,0 +1,20 @@
+# Core
+python-dotenv
+
+# Data
+requests
+pandas
+
+# ML / phonetics
+torch
+transformers
+
+# API layer
+fastapi
+uvicorn[standard]
+
+# UI
+streamlit
+
+# Testing
+pytest
