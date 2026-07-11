@@ -132,7 +132,7 @@ rank_chart = (
     )
     .properties(height=32 * len(overall) + 20)
 )
-st.altair_chart(rank_chart, use_container_width=True)
+st.altair_chart(rank_chart, width="stretch")
 st.caption(
     "Corpus PER = total edits / total reference phonemes across all scored items "
     "(edit-weighted, not a mean of per-item PER)."
@@ -162,7 +162,7 @@ category_chart = (
     )
     .properties(width=90)
 )
-st.altair_chart(category_chart, use_container_width=False)
+st.altair_chart(category_chart, width="content")
 
 with st.expander("Table view"):
     table = by_category[["category_label", "provider_label", "n_items", "corpus_per"]].sort_values(
@@ -171,7 +171,7 @@ with st.expander("Table view"):
     st.dataframe(
         table.rename(columns={"category_label": "Category", "provider_label": "Provider", "n_items": "Items", "corpus_per": "Corpus PER"}),
         hide_index=True,
-        use_container_width=True,
+        width="stretch",
     )
 
 st.caption(
@@ -218,7 +218,7 @@ else:
         )
         .properties(width=70)
     )
-    st.altair_chart(comparison_chart, use_container_width=False)
+    st.altair_chart(comparison_chart, width="content")
 
     with st.expander("Table view"):
         display_cols = comparison[
@@ -236,7 +236,7 @@ else:
                 }
             ),
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
         )
 
     st.warning(
