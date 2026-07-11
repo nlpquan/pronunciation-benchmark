@@ -122,7 +122,11 @@ rank_chart = (
     .mark_bar(cornerRadiusEnd=4)
     .encode(
         x=alt.X("corpus_per:Q", title="Corpus PER (lower is better)", scale=alt.Scale(domain=[0, 1])),
-        y=alt.Y("provider_label:N", sort="-x", title=None),
+        # labelOverlap=False: with only 3 short category names, real overlap
+        # is never a risk, but Vega-Lite's default overlap avoidance still
+        # triggered here (font-metric differences between renderers) and
+        # silently hid the middle row's label entirely rather than crowding it.
+        y=alt.Y("provider_label:N", sort="-x", title=None, axis=alt.Axis(labelOverlap=False)),
         color=alt.Color("provider:N", scale=provider_scale(providers_present), legend=None),
         tooltip=[
             alt.Tooltip("provider_label:N", title="Provider"),
@@ -130,7 +134,7 @@ rank_chart = (
             alt.Tooltip("n_items:Q", title="Items scored"),
         ],
     )
-    .properties(height=32 * len(overall) + 20)
+    .properties(height=42 * len(overall) + 20)
 )
 st.altair_chart(rank_chart, width="stretch")
 st.caption(
