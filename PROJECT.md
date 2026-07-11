@@ -60,7 +60,7 @@ Build a portfolio project that:
 - Fine-tune a small G2P model on WikiPron data, focused specifically on
   Vietnamese and other underrepresented names/languages.
   - Candidate architectures: T5-small or ByT5 (standard for G2P tasks)
-  - Train on Google Colab free tier (GPU compute, doesn't touch Claude Code usage)
+  - Train on Google Colab free tier (GPU compute)
 - Compare fine-tuned model's phoneme predictions against raw TTS output —
   this "before/after" comparison is the key result to highlight.
 
@@ -95,7 +95,7 @@ By the end, should be able to write concrete (non-placeholder) resume bullets li
 - "Open-sourced the evaluation harness and public leaderboard, [live link]."
 
 ## Working Notes / Session Planning
-- Scope each Claude Code session to ONE sub-task (e.g., "set up repo structure,"
+- Scope each working session to ONE sub-task (e.g., "set up repo structure,"
   "write the WikiPron data loader," "build the PER scoring function") rather than
   trying to build multiple phases in one sitting.
 - Use `/clear` between unrelated tasks to keep context lean.
