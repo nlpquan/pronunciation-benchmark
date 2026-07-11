@@ -4,10 +4,15 @@ WORKDIR /app
 
 # HF Spaces' shared cpu-basic tier can misreport AVX512 support (present in
 # CPUID but not actually functional under the hypervisor), which crashes
-# numpy with SIGSEGV (exit 139) the moment it dispatches to that code path -
-# not a Python exception, so it takes the whole app down with no traceback.
-# See https://numpy.org/doc/stable/user/troubleshooting-importerror.html.
+# native libraries with SIGSEGV (exit 139) the moment they dispatch to that
+# code path - not a Python exception, so it takes the whole app down with no
+# traceback. numpy alone wasn't enough: Streamlit serializes every dataframe
+# (including chart data) through PyArrow, which has its own independent
+# runtime SIMD dispatch and the same failure mode - so both need disabling.
+# See https://numpy.org/doc/stable/user/troubleshooting-importerror.html and
+# https://arrow.apache.org/docs/cpp/env_vars.html (ARROW_USER_SIMD_LEVEL).
 ENV NPY_DISABLE_CPU_FEATURES="AVX512F,AVX512CD,AVX512_SKX,AVX512_CLX,AVX512_CNL,AVX512_ICL,AVX512_KNL,AVX512_KNM"
+ENV ARROW_USER_SIMD_LEVEL="NONE"
 
 # App-only requirements (streamlit, pandas) - not the full harness's
 # torch/transformers/allosaurus, which the leaderboard never imports.
