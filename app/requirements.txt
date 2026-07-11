@@ -1,0 +1,6 @@
+# Leaderboard app only - deliberately excludes the heavy TTS/ASR/training deps
+# (torch, transformers, allosaurus, fastapi) that requirements.txt carries for
+# the benchmark harness. The app only reads pre-computed CSVs and reuses the
+# pure-Python scoring/leaderboard modules, so it never needs them.
+streamlit
+pandas

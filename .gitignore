@@ -1,6 +1,7 @@
 __pycache__/
 *.py[cod]
 *.egg-info/
+build/
 .venv/
 venv/
 env/
@@ -16,6 +17,9 @@ data/results/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/results/.gitkeep
+# Published leaderboard results are the point of open-sourcing this repo — track them.
+!data/results/benchmark_results.csv
+!data/results/g2p_predictions.csv
 
 # Audio outputs from TTS calls
 *.wav

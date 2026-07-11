@@ -5,8 +5,9 @@ scripts/run_benchmark.py) and `data/results/g2p_predictions.csv` (G2P side,
 produced by notebooks/g2p_finetune.ipynb after a Colab training run), joins
 on (lang_id, word), and prints a per-language table: each provider's corpus
 PER vs. the G2P model's corpus PER. Both sides are scored with the exact
-same strip_suprasegmentals + corpus_phoneme_error_rate pipeline so the
-numbers are directly comparable - see notebooks/g2p_finetune.ipynb's
+same strip_suprasegmentals + corpus_phoneme_error_rate pipeline (see
+pronunciation_benchmark.leaderboard.data, also used by app/streamlit_app.py)
+so the numbers are directly comparable - see notebooks/g2p_finetune.ipynb's
 docstring for why the G2P test set is guaranteed to be the same items.
 
 Usage:
@@ -22,53 +23,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-import pandas as pd  # noqa: E402
-
-from pronunciation_benchmark.scoring.normalize import strip_suprasegmentals  # noqa: E402
-from pronunciation_benchmark.scoring.per import corpus_phoneme_error_rate, tokenize_ipa  # noqa: E402
-
-
-def score_g2p_predictions(predictions: pd.DataFrame) -> pd.DataFrame:
-    """Per-language corpus PER for the G2P model, scored the same way as the TTS side."""
-    rows = []
-    for lang_id, group in predictions.groupby("lang_id"):
-        pairs = [
-            (
-                strip_suprasegmentals(tokenize_ipa(ref)),
-                strip_suprasegmentals(tokenize_ipa(hyp)),
-            )
-            for ref, hyp in zip(group["reference_ipa"], group["predicted_ipa"])
-        ]
-        rows.append({"lang_id": lang_id, "n_items": len(group), "corpus_per": corpus_phoneme_error_rate(pairs)})
-    return pd.DataFrame(rows)
-
-
-def score_tts_results(results: pd.DataFrame) -> pd.DataFrame:
-    """Per-(provider, language) corpus PER from an already-run benchmark_results.csv.
-
-    `reference`/`hypothesis` columns are already space-joined,
-    already-stripped strings (see benchmark.runner.results_to_dataframe) -
-    re-tokenize but don't re-strip, to match how they were originally scored.
-    A legitimately-empty phoneme sequence (e.g. Allosaurus recognized zero
-    phonemes) round-trips as "" thanks to main()'s keep_default_na=False
-    read, and "".split() == [] is exactly the empty list we want here.
-    """
-    scored = results[results["per"].notna()]
-    rows = []
-    for (provider, lang_id), group in scored.groupby(["provider", "lang_id"]):
-        pairs = [
-            (ref.split(), hyp.split())
-            for ref, hyp in zip(group["reference"], group["hypothesis"])
-        ]
-        rows.append(
-            {
-                "provider": provider,
-                "lang_id": lang_id,
-                "n_items": len(group),
-                "corpus_per": corpus_phoneme_error_rate(pairs),
-            }
-        )
-    return pd.DataFrame(rows)
+from pronunciation_benchmark.leaderboard.data import (  # noqa: E402
+    best_tts_vs_g2p,
+    load_g2p_predictions,
+    load_tts_results,
+    score_g2p_predictions,
+    score_tts_results,
+)
 
 
 def main() -> None:
@@ -84,32 +45,17 @@ def main() -> None:
         )
         return
 
-    # keep_default_na=False: some real words (e.g. Vietnamese "nan") collide
-    # with pandas' default NA sentinels and would otherwise silently become
-    # missing values; it also makes a legitimately-empty phoneme sequence
-    # round-trip as "" instead of NaN, which score_tts_results relies on.
-    # `per` is the one genuinely-numeric column that needs real NaN for
-    # unscored rows (results[results["per"].notna()] below), so it keeps
-    # its own na_values instead of inheriting the blanket override.
-    results = pd.read_csv(args.results, keep_default_na=False, na_values={"per": [""]})
-    predictions = pd.read_csv(args.predictions, keep_default_na=False, na_values=[])
+    results = load_tts_results(args.results)
+    predictions = load_g2p_predictions(args.predictions)
 
-    tts_scores = score_tts_results(results)
+    tts_scores = score_tts_results(results, ["provider", "lang_id"])
     g2p_scores = score_g2p_predictions(predictions)
 
     print("TTS corpus PER by provider/language:")
     print(tts_scores.sort_values(["lang_id", "corpus_per"]).to_string(index=False))
     print()
 
-    best_tts = tts_scores.loc[tts_scores.groupby("lang_id")["corpus_per"].idxmin()]
-    best_tts = best_tts.rename(columns={"provider": "best_tts_provider", "corpus_per": "best_tts_per"})
-
-    comparison = best_tts.merge(
-        g2p_scores.rename(columns={"corpus_per": "g2p_per", "n_items": "g2p_n_items"}),
-        on="lang_id",
-        how="outer",
-    )
-    comparison["improvement"] = comparison["best_tts_per"] - comparison["g2p_per"]
+    comparison = best_tts_vs_g2p(tts_scores, g2p_scores)
 
     print("Best-TTS-provider PER vs. fine-tuned G2P PER (positive improvement = G2P is better):")
     print(comparison.sort_values("lang_id").to_string(index=False))
