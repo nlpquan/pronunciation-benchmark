@@ -10,6 +10,9 @@ env/
 .env
 *.key
 
+# Private planning notes - kept locally, not published
+PROJECT.md
+
 # Data (large / generated — keep raw/processed out of git, track via README instructions instead)
 data/raw/*
 data/processed/*

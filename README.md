@@ -14,8 +14,7 @@ An open benchmark measuring pronunciation accuracy of TTS providers on non-Weste
 and multilingual names, scored via Phoneme Error Rate (PER) against WikiPron ground
 truth IPA transcriptions. A fine-tuned G2P model is included as a comparison point.
 
-See [PROJECT.md](PROJECT.md) for the full plan (phases, dataset sources, scoring
-approach, tech stack) and [WRITEUP.md](WRITEUP.md) for methodology and findings.
+See [WRITEUP.md](WRITEUP.md) for methodology and findings.
 
 ## Status
 All three phases complete: benchmark harness, fine-tuned G2P model, and this
