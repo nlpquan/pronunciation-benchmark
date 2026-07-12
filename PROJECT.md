@@ -93,11 +93,3 @@ By the end, should be able to write concrete (non-placeholder) resume bullets li
 - "Fine-tuned a G2P model, improving pronunciation accuracy on underrepresented
   names by [X]% over baseline TTS output."
 - "Open-sourced the evaluation harness and public leaderboard, [live link]."
-
-## Working Notes / Session Planning
-- Scope each working session to ONE sub-task (e.g., "set up repo structure,"
-  "write the WikiPron data loader," "build the PER scoring function") rather than
-  trying to build multiple phases in one sitting.
-- Use `/clear` between unrelated tasks to keep context lean.
-- Default to Sonnet for routine coding; reserve Opus (if available) for
-  architecture/design decisions only.
